@@ -61,7 +61,7 @@ function Sidebar({
       <div
         id="sidebar"
         ref={sidebar}
-        className={`flex flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:!w-64 shrink-0 bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out ${
+        className={`flex flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:!w-64 shrink-0 bg-slate-50 dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-64"
         }`}
       >
@@ -90,16 +90,16 @@ function Sidebar({
         <div className="space-y-8">
           {/* Pages group */}
           <div>
-            <h3 className="text-xs uppercase text-gray-500 font-semibold pl-3">
+            <h3 className="text-xs uppercase text-slate-600 dark:text-gray-500 font-semibold pl-3">
               <span className="lg:block 2xl:block">Pages</span>
             </h3>
             <ul className="mt-3">
               {/* Dashboard */}
-              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('dashboard') && 'bg-gray-900'}`}>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('dashboard') && 'bg-slate-200 dark:bg-gray-900'}`}>
                 <NavLink
                   end
                   to="/dashboard"
-                  className={`block text-gray-200 truncate transition duration-150 ${pathname.includes('dashboard') ? 'hover:text-gray-200' : 'hover:text-white'}`}
+                  className={`block text-slate-900 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white truncate transition duration-150`}
                 >
                   <div className="flex items-center">
                     <svg className="shrink-0 h-6 w-6" viewBox="0 0 24 24">
@@ -122,11 +122,11 @@ function Sidebar({
               </li>
 
               {/* Users */}
-              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('users') && 'bg-gray-900'}`}>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('users') && 'bg-slate-200 dark:bg-gray-900'}`}>
                 <NavLink
                   end
                   to="/users"
-                  className={`block text-gray-200 truncate transition duration-150 ${pathname.includes('users') ? 'hover:text-gray-200' : 'hover:text-white'}`}
+                  className={`block text-slate-900 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white truncate transition duration-150`}
                 >
                   <div className="flex items-center">
                     <svg className="shrink-0 h-6 w-6" viewBox="0 0 24 24">
@@ -145,11 +145,11 @@ function Sidebar({
               </li>
 
               {/* Subscriptions */}
-              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('subscription') && 'bg-gray-900'}`}>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('subscription') && 'bg-slate-200 dark:bg-gray-900'}`}>
                 <NavLink
                   end
                   to="/subscriptions"
-                  className={`block text-gray-200 truncate transition duration-150 ${pathname.includes('subscription') ? 'hover:text-gray-200' : 'hover:text-white'}`}
+                  className={`block text-slate-900 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white truncate transition duration-150`}
                 >
                   <div className="flex items-center">
                     <svg className="shrink-0 h-6 w-6" viewBox="0 0 24 24">
@@ -172,28 +172,28 @@ function Sidebar({
               </li>
 
               {/* Settings */}
-              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('settings') && 'bg-gray-900'}`}>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname.includes('settings') && 'bg-slate-200 dark:bg-gray-900'}`}>
                 <NavLink
                   end
                   to="/settings"
-                  className={`block text-gray-200 truncate transition duration-150 ${pathname.includes('settings') ? 'hover:text-gray-200' : 'hover:text-white'}`}
+                  className={`block text-slate-900 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white truncate transition duration-150`}
                 >
                   <div className="flex items-center">
                     <svg className="shrink-0 h-6 w-6" viewBox="0 0 24 24">
                       <path
-                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-500' : 'text-gray-600'}`}
+                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-500' : 'text-slate-600 dark:text-gray-600'}`}
                         d="M19.714 14.7l-7.007 7.007-1.414-1.414 7.007-7.007c-.195-.4-.298-.84-.3-1.286a3 3 0 113 3 2.969 2.969 0 01-1.286-.3z"
                       />
                       <path
-                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-300' : 'text-gray-400'}`}
-                        d="M10.714 18.3c.4-.195.84-.298 1.286-.3a3 3 0 11-3 3c.002-.446.105-.885.3-1.286l-6.007-6.007 1.414-1.414 6.007 6.007z"
+                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-300' : 'text-slate-400 dark:text-gray-400'}`}
+                        d="M10.714 18.3c.4-.195.84-.298 1.286-.3a3 3 0 11-3 3c.002-.446.105-.894.3-1.286l-6.007-6.007 1.414-1.414 6.007 6.007z"
                       />
                       <path
-                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-600' : 'text-gray-500'}`}
-                        d="M5.7 10.714c.195.4.298.84.3 1.286a3 3 0 11-3-3c.446.002.885.105 1.286.3l7.007-7.007 1.414 1.414L5.7 10.714z"
+                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-600' : 'text-slate-600 dark:text-gray-500'}`}
+                        d="M5.7 10.714c.195.4.298.84.3 1.286a3 3 0 11-3-3c.446.002.894.105 1.286.3l7.007-7.007 1.414 1.414L5.7 10.714z"
                       />
                       <path
-                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-500' : 'text-gray-600'}`}
+                        className={`fill-current ${pathname.includes('settings') ? 'text-indigo-500' : 'text-slate-500 dark:text-gray-400'}`}
                         d="M19.707 9.292a3.012 3.012 0 00-1.415 1.415L13.286 5.7c-.4.195-.84.298-1.286.3a3 3 0 113-3 2.969 2.969 0 01-.3 1.286l5.007 5.006z"
                       />
                     </svg>
