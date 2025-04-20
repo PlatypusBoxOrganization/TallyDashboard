@@ -22,5 +22,5 @@ export default defineConfig({
             transformMixedEsModules: true,
         },
     },
-    base: '/TallyDashboard/', // Replace with your repository name
+    base: '/', // Serve from the root during local development
 });

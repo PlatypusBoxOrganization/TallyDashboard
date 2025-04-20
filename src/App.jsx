@@ -32,6 +32,9 @@ function App() {
   return (
     <>
       <Routes>
+        {/* Redirect root to /auth */}
+        <Route path="/" element={<Navigate to="/auth" replace />} />
+
         {/* Login/Signup Page */}
         <Route path="/auth" element={<Auth />} />
 
