@@ -184,7 +184,10 @@ function UserSubscriptionManager({ user, subscriptions, currentSubscription, onU
         status: 'inactive',
         updatedAt: new Date().toISOString()
       });
-
+      // Set user's expirationDate to null
+      await updateDoc(doc(db, 'users', user.id), {
+        expirationDate: null
+      });
       onUpdate();
     } catch (error) {
       console.error('Error removing subscription:', error);
@@ -213,6 +216,7 @@ function UserSubscriptionManager({ user, subscriptions, currentSubscription, onU
             Remove
           </button>
         )}
+
       </div>
 
       {error && (
