@@ -25,6 +25,7 @@ function UserSubscriptionAssignment() {
 
       const usersData = usersSnapshot.docs.map(doc => ({
         id: doc.id,
+        username: doc.data().username || doc.id, // fallback for legacy users
         ...doc.data()
       }));
 
@@ -55,20 +56,31 @@ function UserSubscriptionAssignment() {
       endDate.setMonth(endDate.getMonth() + durationMonths);
 
       // Update user's subscription information
-      const userRef = doc(db, 'users', selectedUser);
+      // Find the selected user object
+      const userObj = users.find(u => u.username === selectedUser || u.id === selectedUser);
+      const userDocId = userObj ? userObj.id : selectedUser;
+      const userRef = doc(db, 'users', userDocId);
+      console.log('[DEBUG] Updating user doc:', userDocId, {
+        subscriptionId: selectedSubscription,
+        subscriptionStartDate: startDate.toISOString(),
+        subscriptionEndDate: endDate.toISOString(),
+        expirationDate: endDate.toISOString(),
+        status: 'active'
+      });
       await updateDoc(userRef, {
         subscriptionId: selectedSubscription,
         subscriptionStartDate: startDate.toISOString(),
         subscriptionEndDate: endDate.toISOString(),
+        expirationDate: endDate.toISOString(),
         status: 'active'
       });
 
       // Create a subscription record
       await addDoc(collection(db, 'userSubscriptions'), {
-        userId: selectedUser,
+        userId: userDocId,
         subscriptionId: selectedSubscription,
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        endDate: endDate.toISOString().split('T')[0],
         status: 'active'
       });
 
@@ -108,8 +120,8 @@ function UserSubscriptionAssignment() {
           >
             <option value="">Choose a user...</option>
             {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name || user.email}
+              <option key={user.username || user.id} value={user.username || user.id}>
+                {user.fullName || user.email}
               </option>
             ))}
           </select>

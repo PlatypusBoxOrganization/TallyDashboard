@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, query, orderBy, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../firebaseConfig';
 import Sidebar from '../partials/Sidebar';
@@ -107,6 +107,14 @@ function Users() {
     }));
   };
 
+  // Hash a password using SHA-256 and return hex string
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -120,16 +128,21 @@ function Users() {
         formData.password
       );
 
-      // Add user to Firestore
-      await addDoc(collection(db, 'users'), {
+      // Hash the password before saving
+      const passwordHash = await hashPassword(formData.password);
+      const usernameCaps = formData.username.toUpperCase();
+      // Add user to Firestore with doc id as username in caps and default expirationDate
+      await setDoc(doc(db, 'users', usernameCaps), {
         uid: userCredential.user.uid,
         fullName: formData.fullName,
         email: formData.email,
-        username: formData.username,
+        username: usernameCaps,
         mobileNumber: formData.mobileNumber,
         deviceId: formData.deviceId,
-        createdAt: new Date().toISOString(),
-        status: 'active'
+        passwordHash,
+        createdAt: new Date().toISOString().split('T')[0],
+        status: 'active',
+        expirationDate: null
       });
 
       setFormData({
@@ -411,7 +424,7 @@ function Users() {
                                 <div className="text-left">{user.mobileNumber || '-'}</div>
                               </td>
                               <td className="p-2 whitespace-nowrap">
-                                <div className={`text-left inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${
+                                <div className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${
                                   user.status === 'active' 
                                     ? 'bg-green-100 text-green-600' 
                                     : 'bg-red-100 text-red-600'

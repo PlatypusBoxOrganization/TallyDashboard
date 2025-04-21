@@ -145,6 +145,17 @@ function UserSubscriptionManager({ user, subscriptions, currentSubscription, onU
 
       await addDoc(collection(db, 'userSubscriptions'), subscriptionData);
 
+      // Calculate expiration date and update user document
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + parseInt(selectedDuration));
+      // Format as YYYY-MM-DD
+      const expirationDate = endDate.toISOString().split('T')[0];
+      await updateDoc(doc(db, 'users', user.id), {
+        expirationDate,
+        status: 'active'
+      });
+
       onUpdate();
       setIsModalOpen(false);
       setSelectedDuration('1');
