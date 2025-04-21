@@ -5,12 +5,13 @@ import { getFirestore, collection } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCC-eTl2qhnqcQKu3_mBngo8fp-HuZ-otg",
-  authDomain: "dashboard-a5ca8.firebaseapp.com",
-  projectId: "dashboard-a5ca8",
-  storageBucket: "dashboard-a5ca8.firebasestorage.app",
-  messagingSenderId: "186022224200",
-  appId: "1:186022224200:web:4da185a4f39e74cc44137d",
+  apiKey: "AIzaSyBhXlQv_9b8D1Touw2cTNPrUHXvyljKq28",
+  authDomain: "tellyerpcustom.firebaseapp.com",
+  projectId: "tellyerpcustom",
+  storageBucket: "tellyerpcustom.firebasestorage.app",
+  messagingSenderId: "218291333059",
+  appId: "1:218291333059:web:bfb447071aa74e41317f76",
+  measurementId: "G-5YCRKVK2MW"
 };
 
 // Initialize Firebase

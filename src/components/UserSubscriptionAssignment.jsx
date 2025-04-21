@@ -47,11 +47,19 @@ function UserSubscriptionAssignment() {
     if (!selectedUser || !selectedSubscription) return;
 
     try {
+      // Find the selected subscription plan to get its duration
+      const selectedPlan = subscriptions.find(sub => sub.id === selectedSubscription);
+      const durationMonths = parseInt(selectedPlan?.duration || 1, 10); // Default to 1 month if not set
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + durationMonths);
+
       // Update user's subscription information
       const userRef = doc(db, 'users', selectedUser);
       await updateDoc(userRef, {
         subscriptionId: selectedSubscription,
-        subscriptionStartDate: new Date().toISOString(),
+        subscriptionStartDate: startDate.toISOString(),
+        subscriptionEndDate: endDate.toISOString(),
         status: 'active'
       });
 
@@ -59,7 +67,8 @@ function UserSubscriptionAssignment() {
       await addDoc(collection(db, 'userSubscriptions'), {
         userId: selectedUser,
         subscriptionId: selectedSubscription,
-        startDate: new Date().toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
         status: 'active'
       });
 
