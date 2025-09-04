@@ -34,34 +34,58 @@ function Users() {
 
   const fetchInitialData = async () => {
     try {
+      console.log('Starting to fetch initial data...');
       setLoading(true);
-      const [users, allSubscriptions, allUserSubscriptions] = await Promise.all([
+      setError('');
+      
+      // Fetch data in parallel but handle each promise individually
+      const [usersData, subsData, userSubsData] = await Promise.allSettled([
         fetchUsers(),
         fetchSubscriptions(),
         fetchUserSubscriptions()
       ]);
 
-      // Process subscriptions into a lookup map
-      const subsMap = {};
-      allSubscriptions.forEach(sub => {
-        subsMap[sub.id] = sub;
-      });
-      setSubscriptions(subsMap);
+      // Process users
+      if (usersData.status === 'fulfilled') {
+        console.log(`Fetched ${usersData.value.length} users`);
+        setUsers(usersData.value);
+      } else {
+        console.error('Failed to fetch users:', usersData.reason);
+        setError(prev => prev + ' Failed to load users. ');
+      }
 
-      // Process user subscriptions into a lookup map
-      const userSubsMap = {};
-      allUserSubscriptions.forEach(sub => {
-        if (!userSubsMap[sub.userId]) {
-          userSubsMap[sub.userId] = [];
-        }
-        userSubsMap[sub.userId].push(sub);
-      });
-      setUserSubscriptions(userSubsMap);
+      // Process subscriptions
+      if (subsData.status === 'fulfilled') {
+        const subsMap = {};
+        subsData.value.forEach(sub => {
+          subsMap[sub.id] = sub;
+        });
+        console.log(`Processed ${Object.keys(subsMap).length} subscriptions`);
+        setSubscriptions(subsMap);
+      } else {
+        console.error('Failed to fetch subscriptions:', subsData.reason);
+        setError(prev => prev + 'Failed to load subscriptions. ');
+      }
 
-      setUsers(users);
+      // Process user subscriptions
+      if (userSubsData.status === 'fulfilled') {
+        const userSubsMap = {};
+        userSubsData.value.forEach(sub => {
+          if (!userSubsMap[sub.userId]) {
+            userSubsMap[sub.userId] = [];
+          }
+          userSubsMap[sub.userId].push(sub);
+        });
+        console.log(`Processed user subscriptions for ${Object.keys(userSubsMap).length} users`);
+        setUserSubscriptions(userSubsMap);
+      } else {
+        console.error('Failed to fetch user subscriptions:', userSubsData.reason);
+        setError(prev => prev + 'Failed to load user subscriptions. ');
+      }
+      
     } catch (error) {
-      console.error('Error fetching initial data:', error);
-      setError('Failed to fetch data');
+      console.error('Unexpected error in fetchInitialData:', error);
+      setError('An unexpected error occurred while loading data.');
     } finally {
       setLoading(false);
     }
@@ -69,33 +93,69 @@ function Users() {
 
   const fetchUsers = async () => {
     try {
-      const usersQuery = query(collection(db, 'users'), orderBy('fullName'));
+      console.log('Fetching users from Firestore...');
+      const usersQuery = query(collection(db, 'users'), orderBy('name'));
       const snapshot = await getDocs(usersQuery);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      
+      if (snapshot.empty) {
+        console.log('No users found in the database');
+        return [];
+      }
+      
+      const usersData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log(`User data for ${doc.id}:`, data);
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
+      
+      console.log(`Successfully fetched ${usersData.length} users`);
+      return usersData;
     } catch (error) {
       console.error('Error fetching users:', error);
-      throw error;
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
+      setError('Failed to load users. Please check console for details.');
+      return []; // Return empty array instead of throwing to prevent breaking the UI
     }
   };
 
   const fetchSubscriptions = async () => {
     try {
-      return await getSubscriptions();
+      console.log('Fetching subscriptions from Firestore...');
+      const subscriptions = await getSubscriptions();
+      console.log(`Fetched ${subscriptions.length} subscriptions`);
+      return subscriptions;
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
-      throw error;
+      console.error('Subscription error details:', {
+        code: error.code,
+        message: error.message
+      });
+      // Return empty array to prevent breaking the UI
+      return [];
     }
   };
 
   const fetchUserSubscriptions = async () => {
     try {
-      return await getAllUserSubscriptions();
+      console.log('Fetching user subscriptions from Firestore...');
+      const userSubscriptions = await getAllUserSubscriptions();
+      console.log(`Fetched ${userSubscriptions.length} user subscriptions`);
+      return userSubscriptions;
     } catch (error) {
       console.error('Error fetching user subscriptions:', error);
-      throw error;
+      console.error('User subscription error details:', {
+        code: error.code,
+        message: error.message
+      });
+      // Return empty array to prevent breaking the UI
+      return [];
     }
   };
 

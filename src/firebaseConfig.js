@@ -5,13 +5,14 @@ import { getFirestore, collection } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBhXlQv_9b8D1Touw2cTNPrUHXvyljKq28",
-  authDomain: "tellyerpcustom.firebaseapp.com",
-  projectId: "tellyerpcustom",
-  storageBucket: "tellyerpcustom.firebasestorage.app",
-  messagingSenderId: "218291333059",
-  appId: "1:218291333059:web:bfb447071aa74e41317f76",
-  measurementId: "G-5YCRKVK2MW"
+  apiKey: "AIzaSyBsv6iHjJ97BVZ3v28aSkeP399jYDAyZxI",
+  authDomain: "mssheetapp.firebaseapp.com",
+  databaseURL: "https://mssheetapp-default-rtdb.firebaseio.com",
+  projectId: "mssheetapp",
+  storageBucket: "mssheetapp.firebasestorage.app",
+  messagingSenderId: "275158879164",
+  appId: "1:275158879164:web:d3c40ef20d10968047f9b9",
+  measurementId: "G-Z8FZDDFR8Q"
 };
 
 // Initialize Firebase

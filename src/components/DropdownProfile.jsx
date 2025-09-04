@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Transition from '../utils/Transition';
-
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 function DropdownProfile({
   align
@@ -11,6 +12,19 @@ function DropdownProfile({
 
   const trigger = useRef(null);
   const dropdown = useRef(null);
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('userRole');
+      setDropdownOpen(false);
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // close on click outside
   useEffect(() => {
@@ -80,13 +94,12 @@ function DropdownProfile({
               </Link>
             </li>
             <li>
-              <Link
-                className="font-medium text-sm text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center py-1 px-3"
-                to="/signin"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+              <button
+                className="w-full text-left font-medium text-sm text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center py-1 px-3"
+                onClick={handleSignOut}
               >
                 Sign Out
-              </Link>
+              </button>
             </li>
           </ul>
         </div>
