@@ -94,7 +94,7 @@ function Users() {
   const fetchUsers = async () => {
     try {
       console.log('Fetching users from Firestore...');
-      const usersQuery = query(collection(db, 'users'), orderBy('name'));
+      const usersQuery = query(collection(db, 'users'), orderBy('fullName'));
       const snapshot = await getDocs(usersQuery);
       
       if (snapshot.empty) {
@@ -102,13 +102,14 @@ function Users() {
         return [];
       }
       
-      const usersData = snapshot.docs.map(doc => {
+      const usersData = [];
+      snapshot.forEach(doc => {
         const data = doc.data();
         console.log(`User data for ${doc.id}:`, data);
-        return {
+        usersData.push({
           id: doc.id,
           ...data
-        };
+        });
       });
       
       console.log(`Successfully fetched ${usersData.length} users`);
