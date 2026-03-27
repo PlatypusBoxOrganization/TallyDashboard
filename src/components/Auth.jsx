@@ -27,7 +27,27 @@ function Auth() {
         setIsLogin(true); // Switch to login after signup
       }
     } catch (err) {
-      setError(err.message);
+        console.error("Full Error:", err);
+
+        switch (err.code) {
+            case "auth/user-not-found":
+                setError("User not found. Please sign up first.");
+                break;
+            case "auth/wrong-password":
+                setError("Incorrect password.");
+                break;
+            case "auth/email-already-in-use":
+                setError("Email already registered. Please login.");
+                break;
+            case "auth/weak-password":
+                setError("Password should be at least 6 characters.");
+                break;
+            case "auth/invalid-email":
+                setError("Invalid email format.");
+                break;
+            default:
+                setError("Something went wrong. Try again.");
+        }
     }
   };
 

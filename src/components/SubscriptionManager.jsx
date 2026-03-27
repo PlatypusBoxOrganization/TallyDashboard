@@ -116,7 +116,7 @@ const SubscriptionManager = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">TallyDashboard Subscription Management</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">SETDashboard Subscription Management</h2>
       
       {/* Active Subscriptions */}
       <div className="mb-8">
