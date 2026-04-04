@@ -1,7 +1,7 @@
 @echo off
 
 REM Push the Docker image to Google Container Registry
-docker push gcr.io/numbersmanagerpro/numbersmanagerproSETdashboard
+docker push gcr.io/numbersmanagerpro/numbersmanagerprosetdashboard
 
 
 pause
