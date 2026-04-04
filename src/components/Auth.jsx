@@ -1,127 +1,216 @@
-import React, { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+﻿import React, { useState } from "react";
+import { db } from "../firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 function Auth() {
-  const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+    const [isLogin, setIsLogin] = useState(true);
 
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    setError("");
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+        email: ""
+    });
 
-    try {
-      if (isLogin) {
-        // Login Logic
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        localStorage.setItem("userToken", user.accessToken); // Store user token
-        window.location.href = "/dashboard"; // Redirect to dashboard
-      } else {
-        // Signup Logic
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        alert("Account created successfully! Please log in.");
-        setIsLogin(true); // Switch to login after signup
-      }
-    } catch (err) {
-        console.error("Full Error:", err);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [usernameAvailable, setUsernameAvailable] = useState(null);
 
-        switch (err.code) {
-            case "auth/user-not-found":
-                setError("User not found. Please sign up first.");
-                break;
-            case "auth/wrong-password":
-                setError("Incorrect password.");
-                break;
-            case "auth/email-already-in-use":
-                setError("Email already registered. Please login.");
-                break;
-            case "auth/weak-password":
-                setError("Password should be at least 6 characters.");
-                break;
-            case "auth/invalid-email":
-                setError("Invalid email format.");
-                break;
-            default:
-                setError("Something went wrong. Try again.");
-        }
+    // 🔐 HASH FUNCTION (same as your Users page)
+    async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer))
+            .map(b => b.toString(16).padStart(2, "0"))
+            .join("");
     }
-  };
 
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100 rounded-3xl">
-      <div className="w-full max-w-sm bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
-          {isLogin ? "Login" : "Sign Up"}
-        </h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleAuth}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              {isLogin ? "Login" : "Sign Up"}
-            </button>
-          </div>
-        </form>
-        <p className="text-center mt-4 text-sm">
-          {isLogin ? (
-            <>
-              Don't have an account?{" "}
-              <span
-                onClick={() => setIsLogin(false)}
-                className="text-blue-500 hover:underline cursor-pointer"
-              >
-                Create an account
-              </span>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <span
-                onClick={() => setIsLogin(true)}
-                className="text-blue-500 hover:underline cursor-pointer"
-              >
-                Login
-              </span>
-            </>
-          )}
-        </p>
-      </div>
-    </div>
-  );
+    // ⚡ USERNAME CHECK (REAL-TIME)
+    const checkUsername = async (username) => {
+        if (!username) return;
+
+        const usernameCaps = username.trim().toUpperCase();
+        const ref = doc(db, "users", usernameCaps);
+        const snap = await getDoc(ref);
+
+        setUsernameAvailable(!snap.exists());
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        if (!isLogin && name === "username") {
+            checkUsername(value);
+        }
+    };
+
+    // 🚀 LOGIN + SIGNUP
+    const handleAuth = async (e) => {
+        e.preventDefault();
+        setError("");
+        setSuccess("");
+
+        try {
+            const usernameCaps = formData.username.trim().toUpperCase();
+            const userRef = doc(db, "users", usernameCaps);
+            const userSnap = await getDoc(userRef);
+
+            if (isLogin) {
+                // 🔐 LOGIN
+                if (!userSnap.exists()) {
+                    throw new Error("User not found");
+                }
+
+                const userData = userSnap.data();
+                const enteredHash = await hashPassword(formData.password);
+
+                if (enteredHash !== userData.passwordHash) {
+                    throw new Error("Invalid password");
+                }
+
+                if (userData.status !== "active") {
+                    throw new Error("User is inactive");
+                }
+
+                // ✅ Save session
+                localStorage.setItem("user", JSON.stringify({
+                    username: userData.username,
+                    fullName: userData.fullName
+                }));
+
+                window.location.href = "/dashboard";
+
+            } else {
+                // 🆕 SIGNUP
+
+                if (userSnap.exists()) {
+                    throw new Error("Username already taken");
+                }
+
+                const passwordHash = await hashPassword(formData.password);
+
+                await setDoc(userRef, {
+                    username: usernameCaps,
+                    email: formData.email, // ✅ can repeat
+                    passwordHash,
+                    createdAt: new Date().toISOString(),
+                    status: "active"
+                });
+
+                setSuccess("Account created! Please login.");
+                setIsLogin(true);
+            }
+
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    return (
+        <div className="flex justify-center items-center h-screen bg-gray-100 rounded-3xl">
+            <div className="w-full max-w-sm bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+
+                <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+                    {isLogin ? "Login" : "Sign Up"}
+                </h2>
+
+                {error && <p className="text-red-500 text-center mb-2">{error}</p>}
+                {success && <p className="text-green-500 text-center mb-2">{success}</p>}
+
+                <form onSubmit={handleAuth}>
+
+                    {/* USERNAME */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold mb-2">Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Enter username"
+                            className="border rounded w-full py-2 px-3"
+                            required
+                        />
+
+                        {/* ⚡ LIVE VALIDATION */}
+                        {!isLogin && formData.username && (
+                            <div className="text-sm mt-1">
+                                {usernameAvailable === null ? null : usernameAvailable ? (
+                                    <span className="text-green-600">Username available ✅</span>
+                                ) : (
+                                    <span className="text-red-600">Username taken ❌</span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* EMAIL (ONLY FOR SIGNUP) */}
+                    {!isLogin && (
+                        <div className="mb-4">
+                            <label className="block text-sm font-bold mb-2">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Enter email"
+                                className="border rounded w-full py-2 px-3"
+                                required
+                            />
+                        </div>
+                    )}
+
+                    {/* PASSWORD */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold mb-2">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Enter password"
+                            className="border rounded w-full py-2 px-3"
+                            required
+                        />
+                    </div>
+
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white w-full py-2 rounded">
+                        {isLogin ? "Login" : "Sign Up"}
+                    </button>
+                </form>
+
+                <p className="text-center mt-4 text-sm">
+                    {isLogin ? (
+                        <>
+                            Don't have an account?{" "}
+                            <span
+                                onClick={() => setIsLogin(false)}
+                                className="text-blue-500 cursor-pointer"
+                            >
+                                Sign Up
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            Already have an account?{" "}
+                            <span
+                                onClick={() => setIsLogin(true)}
+                                className="text-blue-500 cursor-pointer"
+                            >
+                                Login
+                            </span>
+                        </>
+                    )}
+                </p>
+
+            </div>
+        </div>
+    );
 }
 
 export default Auth;

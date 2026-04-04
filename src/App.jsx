@@ -75,16 +75,16 @@ function App() {
         />
 
         {/* Settings Page */}
-        <Route
-          path="/settings"
-          element={
-            isAuthenticated ? (
-              <Dashboard />
-            ) : (
-              <Navigate to="/auth" replace />
-            )
-          }
-        />
+        {/*<Route*/}
+        {/*  path="/settings"*/}
+        {/*  element={*/}
+        {/*    isAuthenticated ? (*/}
+        {/*      <Dashboard />*/}
+        {/*    ) : (*/}
+        {/*      <Navigate to="/auth" replace />*/}
+        {/*    )*/}
+        {/*  }*/}
+        {/*/>*/}
 
         {/* Root path - protected like other routes */}
         <Route

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, query, orderBy, updateDoc, doc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth } from '../firebaseConfig';
+/*import { createUserWithEmailAndPassword } from 'firebase/auth';*/
+import { db/*, auth*/ } from '../firebaseConfig';
 import Sidebar from '../partials/Sidebar';
 import Header from '../partials/Header';
 import { getAllUserSubscriptions } from '../services/userSubscriptionService';
 import { getSubscriptions } from '../services/subscriptionService';
 import { formatPrice } from '../utils/formatters';
 import UserSubscriptionManager from '../components/UserSubscriptionManager';
+import { getDoc } from 'firebase/firestore';
+
 
 function Users() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -113,54 +115,99 @@ function Users() {
     const data = encoder.encode(password);
     const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
     return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    try {
-      // Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      // Hash the password before saving
-      const passwordHash = await hashPassword(formData.password);
-      const usernameCaps = formData.username.toUpperCase();
-      // Add user to Firestore with doc id as username in caps and default expirationDate
-      await setDoc(doc(db, 'users', usernameCaps), {
-        uid: userCredential.user.uid,
-        fullName: formData.fullName,
-        email: formData.email,
-        username: usernameCaps,
-        mobileNumber: formData.mobileNumber,
-        deviceId: formData.deviceId,
-        passwordHash,
-        createdAt: new Date().toISOString().split('T')[0],
-        status: 'active',
-        expirationDate: null
-      });
-
-      setFormData({
-        fullName: '',
-        email: '',
-        username: '',
-        password: '',
-        mobileNumber: '',
-        deviceId: ''
-      });
-      setSuccess('User created successfully');
-      setShowForm(false);
-      fetchInitialData();
-    } catch (error) {
-      console.error('Error creating user:', error);
-      setError(error.message);
     }
-  };
+
+    
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        try {
+            const usernameCaps = formData.username.trim().toUpperCase();
+
+            // 🔴 Check username exists
+            const userRef = doc(db, 'users', usernameCaps);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                setError('Username already exists');
+                return;
+            }
+
+            // 🔐 Hash password
+            const passwordHash = await hashPassword(formData.password);
+
+            // ✅ Save user (NO Firebase Auth)
+            await setDoc(userRef, {
+                fullName: formData.fullName,
+                email: formData.email, // can repeat now ✅
+                username: usernameCaps,
+                mobileNumber: formData.mobileNumber,
+                deviceId: formData.deviceId,
+                passwordHash,
+                createdAt: new Date().toISOString(),
+                status: 'active',
+                expirationDate: null
+            });
+
+            setSuccess('User created successfully');
+            setShowForm(false);
+            fetchInitialData();
+
+        } catch (err) {
+            console.error(err);
+            setError('Failed to create user');
+        }
+    };
+
+  //const handleSubmit = async (e) => {
+  //  e.preventDefault();
+  //  setError('');
+  //  setSuccess('');
+
+  //  try {
+  //    // Create user in Firebase Auth
+  //    //const userCredential = await createUserWithEmailAndPassword(
+  //    //  auth,
+  //    //  formData.email,
+  //    //  formData.password
+  //    //);
+
+  //    // Hash the password before saving
+  //    const passwordHash = await hashPassword(formData.password);
+  //    const usernameCaps = formData.username.toUpperCase();
+  //    // Add user to Firestore with doc id as username in caps and default expirationDate
+  //    await setDoc(doc(db, 'users', usernameCaps), {
+  //      uid: userCredential.user.uid,
+  //      fullName: formData.fullName,
+  //      email: formData.email,
+  //      username: usernameCaps,
+  //      mobileNumber: formData.mobileNumber,
+  //      deviceId: formData.deviceId,
+  //      passwordHash,
+  //      createdAt: new Date().toISOString().split('T')[0],
+  //      status: 'active',
+  //      expirationDate: null
+  //    });
+
+  //    setFormData({
+  //      fullName: '',
+  //      email: '',
+  //      username: '',
+  //      password: '',
+  //      mobileNumber: '',
+  //      deviceId: ''
+  //    });
+  //    setSuccess('User created successfully');
+  //    setShowForm(false);
+  //    fetchInitialData();
+  //  } catch (error) {
+  //    console.error('Error creating user:', error);
+  //    setError(error.message);
+  //  }
+  //};
 
   const handleDeactivateUser = async (userId) => {
     if (!window.confirm('Are you sure you want to deactivate this user?')) {
