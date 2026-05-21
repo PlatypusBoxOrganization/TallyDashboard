@@ -1,6 +1,6 @@
 {
-    "homepage": "https://platypusboxorganization.github.io/SETDashboard",
-    "name": "SET-dashboard",
+    "homepage": "https://platypusboxorganization.github.io/MSSheetDashboard",
+    "name": "MSSheet-dashboard",
     "version": "0.1.0",
     "type": "module",
     "scripts": {

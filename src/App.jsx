@@ -18,7 +18,7 @@ function App() {
   const location = useLocation();
 
   // Mock authentication status
-  const isAuthenticated = !!localStorage.getItem("userToken");
+    const isAuthenticated = !!localStorage.getItem("user");
 
   useEffect(() => {
     document.querySelector("html").style.scrollBehavior = "smooth";

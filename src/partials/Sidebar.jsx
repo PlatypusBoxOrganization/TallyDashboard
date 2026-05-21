@@ -82,7 +82,7 @@ function Sidebar({
           </button>
           {/* Logo */}
           <NavLink end to="/" className="block">
-            <span className="text-xl font-bold text-gray-800 dark:text-white">SETDash</span>
+            <span className="text-xl font-bold text-gray-800 dark:text-white">MSSheetDash</span>
           </NavLink>
         </div>
 
