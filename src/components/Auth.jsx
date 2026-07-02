@@ -80,7 +80,10 @@ function Auth() {
                 // ✅ Save session
                 localStorage.setItem("user", JSON.stringify({
                     username: userData.username,
-                    fullName: userData.fullName
+                    fullName: userData.fullName,
+                    role: userData.role || 'parent',
+                    parentId: userData.parentId || null,
+                    permissions: userData.permissions || {}
                 }));
 
                 window.location.href = "/dashboard";
@@ -94,12 +97,29 @@ function Auth() {
 
                 const passwordHash = await hashPassword(formData.password);
 
+                // Create parent user with default settings
                 await setDoc(userRef, {
                     username: usernameCaps,
                     email: formData.email, // ✅ can repeat
                     passwordHash,
                     createdAt: new Date().toISOString(),
-                    status: "active"
+                    status: "active",
+                    // NEW ROLE FIELDS
+                    role: "parent", // Direct signup creates parent
+                    parentId: null, // Parents have no parent
+                    childLimit: 5,  // Default child limit
+                    childCount: 0,  // No children initially
+                    permissions: {  // Full permissions for parents
+                        viewDashboard: true,
+                        viewSubscriptions: true,
+                        viewUsers: true,
+                        manageSubscriptions: true,
+                        manageUsers: false,
+                        viewReports: true,
+                        createChildren: true,
+                        manageChildren: true
+                    },
+                    createdBy: "SELF"
                 });
 
                 setSuccess("Account created! Please login.");
